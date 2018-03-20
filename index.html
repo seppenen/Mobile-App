@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+   
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width height=device-height" />
+
+<link rel="stylesheet" href="css/themes/new.css" />
+  <link rel="stylesheet" href="css/themes/jquery.mobile.icons.min.css" />
+
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile.structure-1.4.5.min.css" /> 
+  <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script> 
+  <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+ 
+ <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+ <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYGmROPS0aVzBLHXoT1zWHEpIipah9w2A&libraries=geometry">
+</script>
+<script src="js/jm.spinner.js"></script>
+
+<link href="js/jm.spinner.css" rel="stylesheet">
+<style>
+
+ 
+
+#itemimg{
+  width:100%;
+    }
+
+.active {  
+}
+.spinner { position:relative; margin-top:50%; left:50%; }
+</style>
+</head>
+<body>  
+
+        <div data-role="page" id="loginpage">
+        <div data-role="header">            
+            <h1><img src="img/logo.png"></h1>
+        </div>         
+        <div role="main" class="ui-content ui-body-a">
+            <h2>Login</h2>
+            <form id="loginLomake">
+            <label for="email">Email:</label>
+            <input type="text" name="user" id="user">
+            <label for="pwd">Pwd:</label>
+            <input type="password" name="pwd" id="pwd">
+            <button class="ui-btn" id="kirjaudu">Kirjaudu</button>
+             
+            </form>
+        </div>
+        <div data-role="footer">
+            
+        </div>
+    </div>
+
+
+     <div data-role="page" id="mainpage"  data-theme="b" >
+     <div data-role="header" id="header" data-tap-toggle="false" data-theme="b" data-position="fixed" >
+  <span id="btnspan"></span><h1><img src="img/logo.png"></h1>
+     </div>
+ <div  id="mapKartta"  class="map"></div>
+<div data-role="content" >
+   <div  id="settings" class="ui-content ui-body-a">
+       
+         <h2>Settings</h2>
+            <form id="settingsLomake">
+            <label for="slider">Search radius:</label>
+            <input type="range" name="slider" id="slider" value="10" min="0" max="50"><br><br>
+            <label for="pame">Name:</label>
+            <input type="text" name="name" id="name">
+            <label for="phone">Phone number:</label>  
+            <input type="text" name="phone" id="phone">
+            <label for="address">Address:</label>
+            <input type="text" name="address" id="address">
+            <input type="hidden" name="user_id" id="user_id" ><br>
+           
+        
+            <input type="button"  class="ui-btn" id="submit" value="Save">
+             
+            </form><br>
+           
+
+   </div>
+
+<div data-role="popup" id="popupBook" data-theme="a" class="ui-corner-all">
+    <form id="bookingForm">
+        <div style="padding:10px 20px;">
+            <h3>Select date</h3>
+            <label for="date" class="ui-hidden-accessible">Date:</label>
+            <input type="date" name="date" id="date" value="" placeholder="date" data-theme="a">
+            <label for="time" class="ui-hidden-accessible">Time:</label>
+            <input type="time" name="time" id="time" value="" placeholder="Time" data-theme="a">
+            <input type="hidden" name="service_id" id="service_id" value="" data-theme="a">
+            <input type="hidden" name="business_id" id="business_id" value="" data-theme="a">
+            <input type="hidden" name="service_title" id="service_title" value="" data-theme="a">
+
+            <input type="hidden" name="u_id" id="u_id" data-theme="a">
+
+            <input type="button" id="submitbooking"  class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check" value="Confirm">
+             <a class="ui-btn ui-corner-all" data-rel="back">Cancel</a>
+        </div>
+    </form>
+</div>
+
+
+   <div id="itemdiv">
+
+    <ul data-role="listview"  data-inset="true" data-theme="b" id="items"  data-filter="true" data-filter-placeholder="Search" data-corners="false"  data-theme="a">  
+    </ul>  
+</div>
+    
+    
+    <div id="item-content"  style='margin-top:-21px;'></div>
+    <div id="spinner"></div>
+    
+
+</div>
+
+   <div data-role="footer"  id="footer" data-tap-toggle="false" data-position="fixed">
+     <div data-role="navbar" >
+    
+ <ul id="bookUl">
+               <li> <a href='#popupBook' id='bookbtn' data-rel='popup' data-position-to='window' class='ui-btn  ui-btn-inline  ui-btn-c' data-transition='pop'>Book </a></li>
+</ul>
+        <ul id='footerUl'>
+           <li><a id="discover" href="#"  class="ui-btn ui-nodisc-icon ui-alt-icon ui-icon-search ui-btn-icon-top"></a></li>
+          <li><a href="#" id="map"  class="ui-btn ui-nodisc-icon ui-alt-icon ui-icon-location ui-btn-icon-top"></a></li>
+          <li><a href="#" id="bookingbtn" class="ui-btn ui-nodisc-icon ui-alt-icon ui-icon-calendar ui-btn-icon-top"></a></li>
+          <li><a href="#" id="settingsbtn" class="ui-btn ui-nodisc-icon ui-alt-icon ui-icon-gear ui-btn-icon-top"></a></li>
+      </ul>
+    </div>
+   </div>
+   </div>
+
+</body>
+<script>
+
+ var lat;
+ var lng;
+ var radius=10;
+
+$(document).ready(function() {
+$("#mapKartta").hide();
+$("#footer").hide();
+$("#header").hide();
+$("#itemdiv").hide();
+$("#settings").hide();
+$("#bookUl").hide(); 
+
+});
+
+
+function start(){
+$("#name").val(sessionStorage.name);
+$("#phone").val(sessionStorage.phone);
+$("#address").val(sessionStorage.address);
+$("#user_id").val(sessionStorage.user_id); 
+$("#u_id").val(sessionStorage.user_id); 
+$("#header").show();
+$("#itemdiv").show();
+$("#footer").show();
+getPlaces();
+
+}
+
+
+function hideAll(){
+    $("#settings").hide();
+    $("#bookUl").hide();
+    $("#btnspan").html("");
+    $("#itemdiv").hide(); 
+    $("#mapKartta").hide(); 
+    $("#items").empty();
+    $("#item-content").empty(); 
+         
+
+}
+
+
+function showBookings(){
+    console.log("showBookings");
+
+        $.getJSON("http://localhost/selectOrders.php?user_id="+sessionStorage.user_id, function(result){
+               console.log(sessionStorage.user_id);
+                $.each(result, function(i, field) {
+                    console.log(field.service_id); 
+                    $("#items").append("<li id='bookedItem' value="+field.service_id+"  ><a href='#' ><h2>"+field.title+"</h2> <p>"+field.status+" "+field.date + " "+field.time+"</p></a></li>");                       
+                });
+                $("#items").listview("refresh"); 
+            });
+          }
+
+
+function showService(id){
+    console.log("showService");
+        $.getJSON("http://localhost/selectService.php?id="+id, function(result){
+                $.each(result, function(i, field) {
+                    console.log(field.title); 
+                    $("#item-content").append(" <img id='itemimg' src='img/kite1.jpg'><div id='itemcontent' class='ui-body ui-body-d'><h2>"+field.title+"</h2><p>"+field.service_desc+"</p> </div></div> <div class='ui-block-c'><div  class='ui-body ui-body-d'><p> Some data here</p></div>");                      
+                    $("#service_id").val(field.service_id);
+                    $("#service_title").val(field.title);
+                    $("#business_id").val(field.business_id);
+                });
+            });        
+            }
+
+
+function showPlaces(id){
+            console.log("showPlaces");
+            $('#spinner').jmspinner(false);
+        for (var i=0; i<id.length; i++) {
+                  $.getJSON("http://localhost/selectServices.php?id="+id[i], function(result){
+                 $.each(result, function(i, field) {
+                     console.log(field.business_id);
+                  $("#items").append("<li id='Item' value="+field.service_id+"  ><a href='#' ><img src="+field.picture+"><h2>"+field.title+"</h2> <p>"+field.service_desc+"</p></a></li>"); 
+                });
+                $("#items").listview("refresh"); 
+            });        
+            }                       
+            }
+
+         function getlocation() { 
+            console.log("getLocation");
+
+              $("#btnspan").html("");  
+            $('#spinner').jmspinner('small');
+            navigator.geolocation.getCurrentPosition(onLocationSuccess, onLocationError, { timeout: 20000 });
+            function onLocationSuccess(position) {   
+                console.log(position.coords.latitude, position.coords.longitude) ;                                            
+                lat=position.coords.latitude;
+                lng=position.coords.longitude; 
+                console.log("Navi Done");
+                if(position.coords.latitude!=null){
+                    start();
+                } 
+            }
+            function onLocationError() {                
+                console.log("Paikannus ei onnistu");
+            }
+      }
+       
+$(document).on("pagecontainershow", function( event, ui ) { 
+           var toPage = ui.toPage[0].id;            
+            if(toPage=="loginpage" && sessionStorage.user_id!=undefined){ 
+                    
+                     getlocation();
+                    document.location="#mainpage";
+                }else if (toPage!="loginpage" && sessionStorage.user_id==undefined){          
+                   document.location="#loginpage";                        
+                }else if (toPage!="loginpage" && sessionStorage.user_id!=undefined){          
+                    hideAll();
+                     getlocation();                        
+                }
+        });  
+
+            function teeMap() {    
+
+           var paikka = new google.maps.LatLng(lat, lng);  
+            var myOptions = {
+                zoom:11,              
+                 disableDefaultUI: true,
+                center: paikka //tai center: paikka
+            };
+            
+            var kartta = new google.maps.Map(document.getElementById("mapKartta"), myOptions);  //tai $("#mapKartta")[0], myOptions 
+            google.maps.event.addListener(kartta, "click", function (event) {
+             
+            });
+
+            var infoWindow = new google.maps.InfoWindow;
+            infoWindow.setPosition(paikka);
+            infoWindow.setContent('Olet tässä.');
+            infoWindow.open(kartta);
+           
+            $.ajax({
+                    type: 'GET',
+                    url: 'http://localhost/json.php',
+                    success: function(data){
+                        var locations=[];
+
+                        var paikat = JSON.parse(data);                      
+                        for(var i=0;i<paikat.length;i++){
+
+                            var paikka={
+                            "id" : parseFloat(paikat[i].business_id),
+                            "name" : paikat[i].business_name,
+                            "lat" : parseFloat(paikat[i].lat),
+                            "lng" : parseFloat(paikat[i].lng)
+                            };                          
+                            locations.push(paikka);
+                              
+                        }   
+                        console.log(locations)
+                     
+
+                        var markers = locations.map(function(location, i) {
+                         return new google.maps.Marker({
+                            position: location,                          
+                            map: kartta,
+                            title: "paikka_"+i, 
+                            label: location.name 
+                         //   label: laskeEtaisyys(new google.maps.LatLng(location)) + " km"
+                        });             
+            }); 
+                    },
+                    error: function(){  
+                        console.log(2);                                         
+                    }
+                });                              
+        }
+      
+
+     function getPlaces() { 
+        console.log("getPlaces")
+       var unsorted=[];
+       var id=[];
+        $.ajax({
+                    type: 'GET',
+                    url: 'http://localhost/json.php',
+                    success: function(data){
+                        var locations=[];
+
+                        var paikat = JSON.parse(data);                      
+                        for(var i=0;i<paikat.length;i++){
+
+                          var  paikka={
+                            "id" : parseFloat(paikat[i].business_id),
+                            "lat" : parseFloat(paikat[i].lat),
+                            "lng" : parseFloat(paikat[i].lng)
+                            };                          
+                            locations.push(paikka);                             
+                        }   
+                            console.log(locations); 
+                            console.log("search in ", radius , " km")
+                            
+                          for (var i=0; i<locations.length; i++) {
+                            var  distance = google.maps.geometry.spherical.computeDistanceBetween(new google.maps.LatLng(locations[i].lat, locations[i].lng),new google.maps.LatLng(lat, lng));
+                            console.log(locations[i].id+ ": "+ (distance/1000).toFixed(1))
+                           if((distance/1000).toFixed(1) <= radius){
+                            var  data={
+                            "id" : parseFloat(locations[i].id),
+                            "km" : parseFloat(distance/1000).toFixed(1)
+                            }; 
+                              unsorted.push(data);  
+
+                           }
+                           }     
+                           console.log("unsorted: ",  unsorted);
+                           unsorted.sort(function(a,b){
+                                return a.km - b.km;
+                           });
+                           for (var i=0; i<unsorted.length; i++) {
+                            id.push(unsorted[i].id);
+                           }
+                             console.log("Sorted", id);
+                             showPlaces(id);
+                    },
+                    error: function(){  
+                        console.log(2);                                         
+                    }
+                });         
+
+                }
+ 
+        $(document).on("tap", "#Item", function(event) {  
+            hideAll();
+       $("#btnspan").html("<a href='#' id='backbtn'  class='ui-btn-left ui-btn ui-btn-inline ui-mini ui-nodisc-icon ui-alt-icon ui-btn-icon-left ui-icon-carat-l'>back</a> ");             
+        $("#bookUl").show();
+         $("#footerUl").hide();
+
+        var id = $(this).context.value; 
+            showService(id);
+        });
+        $(document).on("tap", "#bookedItem", function(event) {  
+            hideAll();
+       $("#btnspan").html("<a href='#' id='backbtn2'  class='ui-btn-left ui-btn ui-btn-inline ui-mini ui-nodisc-icon ui-alt-icon ui-btn-icon-left ui-icon-carat-l'>back</a> ");             
+        var id = $(this).context.value; 
+            showService(id);
+        });
+
+        $(document).on("tap", "#backbtn", function(event) {  
+            hideAll();                   
+             $("#itemdiv").show();
+              $("#footerUl").show();      
+            getPlaces(); 
+        });
+        $(document).on("tap", "#backbtn2", function(event) {  
+            hideAll();                   
+             $("#itemdiv").show();      
+            showBookings(); 
+        });
+
+        $(document).on("tap", "#discover", function(event) { 
+             hideAll();
+             $("#itemdiv").show(); 
+            getlocation(1);      
+                                     
+        });
+
+           $(document).on("tap", "#map", function(event) {
+            hideAll();
+            
+            $("#mapKartta").show();
+            $("#mapKartta").height(screen.height);
+            teeMap(); 
+                                     
+        });
+
+
+             $(document).on("tap", "#bookingbtn", function(event) {
+                hideAll();
+                
+                showBookings();
+                $("#itemdiv").show(); 
+                                     
+        });
+
+         $(document).on("tap", "#settingsbtn", function(event) {                
+                   
+             hideAll();
+            $("#settings").show();
+                     
+
+        });
+
+        $("#submit").on("tap", function(){
+               radius=parseInt($("#slider").val());
+              console.log("Radius: ", radius);
+
+                $.ajax({
+                    type: 'post',
+                    data: $("#settingsLomake").serialize(),
+                    url: 'http://127.0.0.1/updateUserData.php',
+                    success: function(data){   
+
+                        sessionStorage.setItem('name', $("#name").val());
+                        sessionStorage.setItem('phone', $("#phone").val());
+                        sessionStorage.setItem('address', $("#address").val());
+                        hideAll();                                     
+                        $("#itemdiv").show();      
+                        getlocation();                   
+                       },
+                    error: function(){  
+                        console.log(2);                                         
+                    }
+                }); 
+
+        });
+
+          $("#submitbooking").on("tap", function(){
+               
+                $.ajax({
+                    type: 'post',
+                    data: $("#bookingForm").serialize(),
+                    url: 'http://127.0.0.1/insertBooking.php',
+                    success: function(data){   
+                        $("#popupBook").popup("close");   
+                        console.log(data);            
+                       },
+                    error: function(){  
+                        console.log(2);                                         
+                    }
+                }); 
+
+        });
+
+        $("#kirjaudu").on("tap", function(){
+            if($("#user").val().length>0&&$("#pwd").val().length>0){               
+                $.ajax({
+                    type: 'post',
+                    data: $("#loginLomake").serialize(),
+                    url: 'http://127.0.0.1/selectLogin.php',
+                    success: function(data){                      
+                        var tiedot = JSON.parse(data);  
+                        if(tiedot.length>0){
+                            console.log(tiedot);
+                             sessionStorage.user_id=tiedot[0].user_id; 
+                             sessionStorage.name=tiedot[0].name; 
+                             sessionStorage.address=tiedot[0].address; 
+                             sessionStorage.phone=tiedot[0].phone; 
+                            
+                            document.location="#mainpage";
+                        }else{
+                            console.log("Käyttäjää ei tunnisteta.")
+                            document.location="#loginpage";
+                        }                       
+                    },
+                    error: function(){  
+                        console.log(2);                                         
+                    }
+                });             
+            }           
+        });
+
+
+   
+</script>
+
+</html>
