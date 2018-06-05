@@ -180,7 +180,7 @@ function hideAll(){
 function showBookings(){
     console.log("showBookings");
 
-        $.getJSON("http://localhost/selectOrders.php?user_id="+sessionStorage.user_id, function(result){
+        $.getJSON("http://localhost/app/selectOrders.php?user_id="+sessionStorage.user_id, function(result){
                console.log(sessionStorage.user_id);
                 $.each(result, function(i, field) {
                     console.log(field.service_id); 
@@ -193,7 +193,7 @@ function showBookings(){
 
 function showService(id){
     console.log("showService");
-        $.getJSON("http://localhost/selectService.php?id="+id, function(result){
+        $.getJSON("http://localhost/app/selectService.php?id="+id, function(result){
                 $.each(result, function(i, field) {
                     console.log(field.title); 
                     $("#item-content").append(" <img id='itemimg' src='img/kite1.jpg'><div id='itemcontent' class='ui-body ui-body-d'><h2>"+field.title+"</h2><p>"+field.service_desc+"</p> </div></div> <div class='ui-block-c'><div  class='ui-body ui-body-d'><p> Some data here</p></div>");                      
@@ -209,7 +209,7 @@ function showPlaces(id){
             console.log("showPlaces");
             $('#spinner').jmspinner(false);
         for (var i=0; i<id.length; i++) {
-                  $.getJSON("http://localhost/selectServices.php?id="+id[i], function(result){
+                  $.getJSON("http://localhost/app/selectServices.php?id="+id[i], function(result){
                  $.each(result, function(i, field) {
                      console.log(field.business_id);
                   $("#items").append("<li id='Item' value="+field.service_id+"  ><a href='#' ><img src="+field.picture+"><h2>"+field.title+"</h2> <p>"+field.service_desc+"</p></a></li>"); 
@@ -274,7 +274,7 @@ $(document).on("pagecontainershow", function( event, ui ) {
            
             $.ajax({
                     type: 'GET',
-                    url: 'http://localhost/json.php',
+                    url: 'http://localhost/app/json.php',
                     success: function(data){
                         var locations=[];
 
@@ -316,7 +316,7 @@ $(document).on("pagecontainershow", function( event, ui ) {
        var id=[];
         $.ajax({
                     type: 'GET',
-                    url: 'http://localhost/json.php',
+                    url: 'http://localhost/app/json.php',
                     success: function(data){
                         var locations=[];
 
@@ -430,7 +430,7 @@ $(document).on("pagecontainershow", function( event, ui ) {
                 $.ajax({
                     type: 'post',
                     data: $("#settingsLomake").serialize(),
-                    url: 'http://127.0.0.1/updateUserData.php',
+                    url: 'http://localhost/app/updateUserData.php',
                     success: function(data){   
 
                         sessionStorage.setItem('name', $("#name").val());
@@ -452,7 +452,7 @@ $(document).on("pagecontainershow", function( event, ui ) {
                 $.ajax({
                     type: 'post',
                     data: $("#bookingForm").serialize(),
-                    url: 'http://127.0.0.1/insertBooking.php',
+                    url: 'http://localhost/app/insertBooking.php',
                     success: function(data){   
                         $("#popupBook").popup("close");   
                         console.log(data);            
@@ -469,7 +469,7 @@ $(document).on("pagecontainershow", function( event, ui ) {
                 $.ajax({
                     type: 'post',
                     data: $("#loginLomake").serialize(),
-                    url: 'http://127.0.0.1/selectLogin.php',
+                    url: 'http://localhost/app/selectLogin.php',
                     success: function(data){                      
                         var tiedot = JSON.parse(data);  
                         if(tiedot.length>0){
